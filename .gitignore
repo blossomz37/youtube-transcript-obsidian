@@ -8,3 +8,4 @@ scratchpad/
 *.log
 *.zip
 .DS_Store
+.scratch/
