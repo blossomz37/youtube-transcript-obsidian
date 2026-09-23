@@ -9,3 +9,4 @@ scratchpad/
 *.zip
 .DS_Store
 .scratch/
+/main.js

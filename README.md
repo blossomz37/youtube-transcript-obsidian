@@ -24,7 +24,7 @@ other installed YouTube plugins. No settings or API keys are bundled.
 ## Use
 
 1. In plugin settings, select or type a destination folder inside the current
-   vault. It is created on import if necessary.
+   vault. The picker lists folder names only. It is created on import if necessary.
 2. For summaries, choose or create an OpenRouter API key in Obsidian's secret
    selector. Only its name is saved in this plugin's `data.json`.
 3. Select the model and press **Test settings**. This makes one small paid request
@@ -56,7 +56,8 @@ instead of being silently dropped. This command is available in editing mode.
 
 ## Preservation and recovery
 
-- Existing notes are detected by their `youtube_video_id` property. Open an
+- Existing notes directly in the selected destination folder are detected by
+  their `youtube_video_id` property. Other folders are not scanned. Open an
   existing note or create another copy. This version never replaces a note.
 - Filename collisions get a numbered pair. Vault create operations still refuse
   an existing path if another writer races the import.
@@ -105,7 +106,8 @@ provider allowlist, no redirects, no cookies, and a response-size limit.
 `src/retrieval.mjs` and `src/summary.mjs` handle caption retrieval and OpenRouter
 requests. The bundled prompt and spelling glossary live in `prompts/`. All build
 inputs are in this repository; no sibling checkout is needed. Build products and
-local evaluation notes are ignored.
+local evaluation notes are ignored. The build also writes `main.js` at the
+repository root for build verification.
 
 `npm test` runs the plugin workflow, note formatting, retrieval, and summary tests.
 
@@ -125,6 +127,24 @@ If this tool is useful to you, you can [buy me a coffee](https://www.buymeacoffe
 
 This is the standalone home of the Obsidian plugin, extracted from
 [YouTube Transcript](https://github.com/blossomz37/youtube-transcript) at commit
-`1787656`. It retains plugin version 0.1.2 and the plugin ID
-`youtube-transcript-notes`, so existing vault settings and notes remain compatible.
+`1787656`. It retains the plugin ID `youtube-transcript-notes`, so existing vault settings and notes remain compatible.
 The browser and macOS apps continue in the original repository.
+
+## Releases and provenance
+
+Pushing a version tag matching `manifest.json` (for example, `0.1.3`) runs the
+release workflow: clean install, tests, build, GitHub artifact attestations,
+then publication of `main.js`, `manifest.json`, and `styles.css`. All three assets
+are attested before upload. Releases before 0.1.3 do not have attestations.
+
+After downloading release assets, verify them with the GitHub CLI:
+
+```sh
+gh attestation verify main.js -R blossomz37/youtube-transcript-obsidian
+gh attestation verify manifest.json -R blossomz37/youtube-transcript-obsidian
+gh attestation verify styles.css -R blossomz37/youtube-transcript-obsidian
+```
+
+## License
+
+[MIT](LICENSE) © 2026 Carlo Santiago.

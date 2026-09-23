@@ -1,4 +1,4 @@
-import { Plugin, Modal, PluginSettingTab, Setting, Notice, FuzzySuggestModal, TFolder, SecretComponent, addIcon } from 'obsidian';
+import { Plugin, Modal, PluginSettingTab, Setting, Notice, FuzzySuggestModal, SecretComponent, addIcon } from 'obsidian';
 import { loadVideo, extractVideoId } from './retrieval.mjs';
 import { summarizeVideo } from './summary.mjs';
 import defaultPrompt from '../prompts/summary.md';
@@ -55,7 +55,7 @@ export default class YouTubeNotes extends Plugin {
 
 class FolderPicker extends FuzzySuggestModal {
   constructor(app,onChoose){super(app);this.onChoose=onChoose;this.setPlaceholder('Choose a vault folder');}
-  getItems(){return this.app.vault.getAllLoadedFiles().filter(f=>f instanceof TFolder && f.path!=='/');}
+  getItems(){return this.app.vault.getAllFolders(false);}
   getItemText(folder){return folder.path;}
   onChooseItem(folder){this.onChoose(folder.path);}
 }
@@ -306,10 +306,10 @@ class ImportModal extends Modal {
         this.video = null; this.saved = {}; this.result = null; this.paths = null; this.duplicateChoice = false;
       }
       this.attemptedId = id;
-      this.matches = this.app.vault.getMarkdownFiles().filter(f => this.app.metadataCache.getFileCache(f)?.frontmatter?.youtube_video_id === id);
+      this.matches = (this.app.vault.getFolderByPath(this.settings.folder)?.children || []).filter(f => f.extension === 'md' && this.app.metadataCache.getFileCache(f)?.frontmatter?.youtube_video_id === id);
       if (this.matches.length && !this.duplicateChoice && !this.existing && !this.saved.transcript) {
         this.busy = false;
-        this.transition('duplicates', 'This video is already in your vault.');
+        this.transition('duplicates', 'This video is already in the destination folder.');
         return;
       }
       validateSettings(this.settings, this.mode !== 'transcript');

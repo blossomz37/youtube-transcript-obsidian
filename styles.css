@@ -15,7 +15,6 @@
 .ytn-modal .ytn-note-row .ytn-hint { margin-bottom: 0; }
 .ytn-modal .ytn-details { color: var(--text-muted); font-size: var(--font-ui-small); margin-top: .8em; }
 .ytn-modal .ytn-details summary { cursor: pointer; }
-.ytn-modal [hidden] { display: none !important; }
 .ytn-settings textarea { width: 100%; min-height: 20em; font-family: var(--font-monospace); }
 .ytn-settings .ytn-prompt .setting-item-info { display: none; }
 .ytn-settings .ytn-prompt .setting-item-control { width: 100%; }

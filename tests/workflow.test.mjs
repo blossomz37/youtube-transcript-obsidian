@@ -13,9 +13,9 @@ const video={status:'ok',metadata:{video_id:'abcdefghijk',title:'Synthetic',sour
 const result={summary:'## Summary\nGenerated.',model:'test/model',usage:{cost:0.01},citations:[]};
 async function setup(){
  const files=new Map(),bodies=new Map();let failSummary=false;
- const vault={getAbstractFileByPath:p=>files.get(p),getMarkdownFiles:()=>[...files.values()].filter(f=>f.extension==='md'),
+ const vault={getAbstractFileByPath:p=>files.get(p),getFolderByPath:p=>files.get(p),getAllFolders:()=>[...files.values()].filter(f=>f.children),
  async createFolder(p){files.set(p,{path:p,children:[]});},
- async create(p,text){if(files.has(p))throw new Error('Already exists');if(failSummary&&p.endsWith('Summary.md'))throw new Error('Disk unavailable');const f={path:p,basename:p.split('/').at(-1).replace(/\.md$/,''),extension:'md'};files.set(p,f);bodies.set(p,text);return f;},
+ async create(p,text){if(files.has(p))throw new Error('Already exists');if(failSummary&&p.endsWith('Summary.md'))throw new Error('Disk unavailable');const f={path:p,basename:p.split('/').at(-1).replace(/\.md$/,''),extension:p.split('.').at(-1)};files.set(p,f);files.get(p.split('/').slice(0,-1).join('/'))?.children.push(f);bodies.set(p,text);return f;},
  async process(f,fn){bodies.set(f.path,fn(bodies.get(f.path)));}};
  const app={vault,secretStorage:{getSecret:()=> 'synthetic-key'},metadataCache:{getFileCache:()=>({frontmatter:{youtube_video_id:'abcdefghijk'}})},workspace:{getLeaf:()=>({openFile:async()=>{}})}};
  const plugin=new Plugin(app);await plugin.onload();plugin.summarize=async()=>result;
@@ -40,9 +40,9 @@ test('failed note save retains generated answer and retry does not spend again',
  t.setFailSummary(false);await t.modal.run();assert.equal(calls,1);assert.ok(t.modal.saved.summary);
 });
 test('duplicate detection prevents a paid request until user chooses another copy',async()=>{
- const t=await setup();t.modal.existing=null;t.modal.mode='both';await t.plugin.app.vault.create('Existing.md','Keep me');
- let calls=0;t.plugin.summarize=async()=>{calls++;return result;};await t.modal.run();assert.equal(calls,0);assert.ok(t.modal.duplicates);assert.equal(t.bodies.get('Existing.md'),'Keep me');
- t.modal.duplicateChoice=true;await t.modal.run();assert.equal(calls,1);assert.equal(t.bodies.get('Existing.md'),'Keep me');
+ const t=await setup();t.modal.existing=null;t.modal.mode='both';await t.plugin.app.vault.createFolder('YouTube');await t.plugin.app.vault.create('YouTube/Existing.md','Keep me');
+ let calls=0;t.plugin.summarize=async()=>{calls++;return result;};await t.modal.run();assert.equal(calls,0);assert.ok(t.modal.duplicates);assert.equal(t.bodies.get('YouTube/Existing.md'),'Keep me');
+ t.modal.duplicateChoice=true;await t.modal.run();assert.equal(calls,1);assert.equal(t.bodies.get('YouTube/Existing.md'),'Keep me');
 });
 test('cancellation prevents saving a returned summary but retains saved transcript',async()=>{
  const t=await setup();t.modal.existing=null;t.modal.mode='both';t.plugin.summarize=async()=>{t.modal.controller.abort();return result;};
@@ -72,7 +72,7 @@ test('progress removes create and recovery controls; completion offers explicit 
  await t.modal.run();assert.deepEqual(buttons(t.modal),['Open summary','Open transcript','Done']);
 });
 test('duplicate screen replaces form actions with short labels',async()=>{
- const t=await setup();t.modal.existing=null;await t.plugin.app.vault.create('Very long file name.md','Original');
+ const t=await setup();t.modal.existing=null;await t.plugin.app.vault.createFolder('YouTube');await t.plugin.app.vault.create('YouTube/Very long file name.md','Original');
  t.plugin.app.metadataCache.getFileCache=()=>({frontmatter:{youtube_video_id:'abcdefghijk',youtube_note:'summary'}});
  await t.modal.run();assert.deepEqual(buttons(t.modal),['Open summary','Create new summary','Back','Cancel']);
 });
@@ -93,4 +93,16 @@ test('recovery save failure retries only the transcript without another AI reque
  t.plugin.app.vault.create=async(...args)=>{if(fail)throw new Error('Disk unavailable');return create(...args);};
  await t.modal.saveRecovery();assert.deepEqual(buttons(t.modal),['Retry saving transcript','Cancel']);
  fail=false;await t.modal.start.onclick();assert.equal(calls,1);assert.equal(t.modal.state,'success');assert.ok(t.modal.saved.transcript);
+});
+
+test('duplicate checks inspect only Markdown notes directly in the destination folder',async()=>{
+ const t=await setup();t.modal.existing=null;t.modal.mode='both';
+ await t.plugin.app.vault.createFolder('Private');
+ await t.plugin.app.vault.create('Private/Existing.md','Private note');
+ await t.plugin.app.vault.createFolder('YouTube');
+ await t.plugin.app.vault.create('YouTube/image.png','Image');
+ const inspected=[];
+ t.plugin.app.metadataCache.getFileCache=f=>{inspected.push(f.path);return {frontmatter:{youtube_video_id:'abcdefghijk'}};};
+ await t.modal.run();assert.equal(t.modal.state,'success');assert.deepEqual(inspected,[]);
+ assert.equal(t.bodies.get('Private/Existing.md'),'Private note');
 });
