@@ -1,0 +1,10 @@
+{
+  "id": "youtube-transcript-notes",
+  "name": "YouTube Transcript Notes",
+  "version": "0.1.2",
+  "minAppVersion": "1.12.3",
+  "description": "Save a public YouTube transcript and a grounded OpenRouter summary as linked Markdown notes.",
+  "author": "Carlo Santiago",
+  "isDesktopOnly": true,
+  "fundingUrl": "https://www.buymeacoffee.com/8xewoxol8o"
+}

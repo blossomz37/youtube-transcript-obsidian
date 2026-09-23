@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+.state/
+scratchpad/
+.env
+.env.*
+*.log
+*.zip
+.DS_Store
