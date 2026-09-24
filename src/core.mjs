@@ -47,10 +47,12 @@ export function transcriptNote(video, summaryPath) {
     video.segments.map(s=>`[${stamp(s.start)}](https://www.youtube.com/watch?v=${id}&t=${Math.floor(s.start)}s) ${s.text}`).join('\n\n')+'\n';
 }
 export function summaryNote(video, result, transcriptPath, settings) {
+  const id=extractVideoId(video.metadata.video_id);
   return frontmatter(video,'summary',{ model:result.model, max_output_tokens:settings.maxTokens,
     temperature:settings.temperature, detail:settings.detail, web_search_requested:settings.webSearch,
     web_sources_returned:result.citations?.length || 0, cost_usd:result.usage.cost ?? null,
     source_note:transcriptPath || null }) +
+    `![](https://www.youtube.com/watch?v=${id})\n\n` +
     (transcriptPath ? `Transcript: [[${transcriptPath.replace(/\.md$/,'')}]]\n\n` : '') + result.summary+'\n';
 }
 export function parseTranscriptNote(content, fm) {

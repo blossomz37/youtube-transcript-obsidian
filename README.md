@@ -34,7 +34,9 @@ other installed YouTube plugins. No settings or API keys are bundled.
    palette. Paste a URL, choose Transcript, Summary, or Both, and click **Create transcript**, **Create summary**, or **Create notes**.
    The dialog shows the destination and summary settings before you start.
 5. Once saved, choose **Open summary**, **Open transcript**, or **Done**.
-   Both creates two linked notes; nothing opens behind the popup.
+   Both creates two linked notes; nothing opens behind the popup. Summary notes
+   start with an embedded YouTube player, followed by the transcript link (when
+   available) and summary text.
 
 Transcript-only imports need no API key. Public watch/share/Shorts/live/embed
 URLs and video IDs are accepted. Playback offsets do not trim the transcript.

@@ -37,6 +37,16 @@ test('summary records model, cost, requested search and real returned sources',(
  const note=summaryNote(video,{model:'model/id',usage:{cost:0.01},citations:[],summary:'## Summary\nText'},'Notes/source.md',defaults);
  assert.match(note,/model: "model\/id"/);assert.match(note,/web_sources_returned: 0/);assert.match(note,/\[\[Notes\/source\]\]/);assert.doesNotMatch(note,/api.key/i);
 });
+test('summary body starts with a YouTube embed with or without a transcript link',()=>{
+ const result={model:'model/id',usage:{},citations:[],summary:'## Summary\nText'};
+ for(const path of [null,'Notes/source.md']) {
+  const note=summaryNote(video,result,path,defaults);
+  assert.ok(note.startsWith('---\n'));
+  const body=note.split('\n---\n\n')[1];
+  assert.equal(body, '![](https://www.youtube.com/watch?v=abcdefghijk)\n\n'
+    +(path?'Transcript: [[Notes/source]]\n\n':'')+result.summary+'\n');
+ }
+});
 test('web and detailed overrides preserve a separate evidence boundary',()=>{
  const p=composePrompt({...defaults,prompt:'Source only.',webSearch:true,detail:'detailed'},'Name spelling');
  assert.match(p,/WEB VERIFICATION OVERRIDE/);assert.match(p,/separate "## Web verification"/);assert.match(p,/every substantive chapter/);
